@@ -1,0 +1,4 @@
+/venv/
+task.log
+/media/*
+.idea
