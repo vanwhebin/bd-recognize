@@ -111,9 +111,9 @@ CORS_ORIGIN_ALLOW_ALL = True
 DEBUG = True
 DOMAIN = "http://127.0.0.1:8001"
 
-BAIDU_APP_ID = '19547688'
-BAIDU_API_KEY = '36TjcLXSGlP2In46SBGzpsO3'
-BAIDU_SECRET_KEY = 'OmY6bieqW4oQLpoGV2EWhg7m3tSCGY34'
+BAIDU_APP_ID = ''
+BAIDU_API_KEY = ''
+BAIDU_SECRET_KEY = ''
 
 DATABASES = {
 	'default': {
@@ -121,8 +121,8 @@ DATABASES = {
 		'NAME': 'django-ocr',
 		'HOST': '127.0.0.1',
 		'PORT': '3306',
-		'USER': 'root',
-		'PASSWORD': '123456',
+		'USER': '',
+		'PASSWORD': '',
 		'OPTIONS': {'charset': 'utf8mb4'}
 	}
 }
