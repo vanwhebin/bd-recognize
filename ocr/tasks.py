@@ -2,12 +2,12 @@
 # @Time     :   2020/7/14 19:06
 # @Author       vanwhebin
 
-from huey.contrib.djhuey import task
+from huey.contrib.djhuey import db_task, task
 
 from ocr.utils.clip_pdf import ClipPDF
 
 
-@task()
+@db_task()
 def recognize(db_items):
 	clip = ClipPDF()
 	clip.run(db_items)

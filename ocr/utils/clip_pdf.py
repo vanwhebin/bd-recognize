@@ -2,7 +2,7 @@ import os
 import time
 import uuid
 import re
-
+import hashlib
 import fitz
 
 from .bd_api import BaiduAPI
@@ -14,6 +14,7 @@ from ocr.models import Invoice
 
 class ClipPDF:
 	pdfs = []
+	pdf_hash = []
 	bd_api = None
 	file_type = {
 		"fedex": "fedex",
@@ -23,6 +24,7 @@ class ClipPDF:
 	def __init__(self):
 		self.bd_api = BaiduAPI()
 		self.pdfs = []
+		self.pdf_hash = []
 
 	def pympdf2_fitz(self, pdf_p, file_type):
 		"""
@@ -52,15 +54,13 @@ class ClipPDF:
 		general_res = self.bd_api.run_general(it)
 		# print(general_res)
 		if general_res and "words_result" in general_res:
-			for i in general_res['words_result']:
-				# 检查执行结果
-				check_word_result = handler.check_valid(i['words'])
-				if not check_word_result:
-					time.sleep(1)
-					word = self.bd_api.run_accurate(it)
-					# print(word)
-					return [handler.format_text(accurate_item['words']) for accurate_item in word['words_result']]
-				return [check_word_result]
+			check_word_result = handler.check_valid("".join([i['words'] for i in general_res['words_result']]))
+			# 检查执行结果
+			if not check_word_result:
+				time.sleep(1)
+				word = self.bd_api.run_accurate(it)
+				return [handler.format_text("".join([accurate_item['words'] for accurate_item in word['words_result']]))]
+			return [check_word_result]
 		else:
 			print(u'百度API请求出错:' + str(general_res['error_msg']))
 			return ['']
@@ -151,13 +151,23 @@ class ClipPDF:
 			if handler_res and "clip_list" in handler_res:
 				for it in handler_res['clip_list']:
 					result = self.handle_api_result(it, handler_res['handler'])
-					time.sleep(0.5)
+					time.sleep(0.8)
 					data_list = data_list + result
 					os.remove(it)
 				if data_list:
 					item.order_num = data_list[0]
 					item.tracking_num = data_list[1]
 					item.save()
+
+	@staticmethod
+	def file_hash(item):
+		file_path = os.path.join(MEDIA_ROOT, item.location)
+		with open(file_path, 'rb') as f:
+			md5obj = hashlib.md5()
+			md5obj.update(f.read())
+			item.hash = md5obj.hexdigest()
+			print(item.hash)
+			return item.hash
 
 	def run(self, files):
 		"""执行入口"""

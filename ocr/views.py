@@ -3,6 +3,7 @@
 # @Author       vanwhebin
 import os
 import time
+import hashlib
 
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
@@ -21,11 +22,15 @@ def invoice(request):
 	response = {'code': 200, 'msg': '', "data": []}
 	if request.method == "POST":
 		# 处理上传文件
+		clip = ClipPDF()
 		uploaded_files = handle_upload(request)
 		# 识别invoice
-		clip = ClipPDF()
 		data = clip.check_multi_page(uploaded_files)
-		recognize(data)
+		if len(data) > 10:
+			# 为防止每个任务http连接太长被远程服务器强制断开，将任务处理的列表切片
+			clip_list = handle_cli_list(data, 10)
+			for clip in clip_list:
+				recognize(clip)
 		response['msg'] = "上传票据成功，识别中"
 		# 返回结果 根据上传文件的标题查找数据库信息，返回结果
 	elif request.method == "GET":
@@ -44,6 +49,15 @@ def invoice(request):
 	return JsonResponse(response)
 
 
+def handle_cli_list(full_list, per_list_len):
+	""" 将整个list按数量切片为多个列表"""
+	list_of_group = zip(*(iter(full_list),) * per_list_len)
+	end_list = [list(i) for i in list_of_group]  # i is a tuple
+	count = len(full_list) % per_list_len
+	end_list.append(full_list[-count:]) if count != 0 else end_list
+	return end_list
+
+
 def handle_upload(request):
 	uploaded_file = request.FILES.getlist('file')
 
@@ -58,9 +72,10 @@ def handle_upload(request):
 			if not os.path.exists(dir_path):
 				os.makedirs(dir_path)
 			with open(os.path.join(dir_path, file_name), 'wb') as f:
-				f.write(it.read())
-			inv = Invoice.objects.create(location=os.path.join(time_tag, file_name), title=file_name)
-			upload_files.append(inv)
+				file_content = it.read()
+				f.write(file_content)
+				inv = Invoice.objects.create(location=os.path.join(time_tag, file_name), title=file_name)
+				upload_files.append(inv)
 
 		return upload_files
 

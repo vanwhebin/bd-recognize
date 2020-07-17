@@ -60,7 +60,8 @@ class FedexClip(Clip):
 		:param string:
 		:return:
 		"""
-		return re.sub(r"PO|TRK|MPS|\.|/|:|#|\s", '', string)
+		string = re.sub(r"PO|TRK|MPS|\.|/|:|#|\s", '', string)
+		return re.sub(r"2of2|1of1", '', string)
 
 	def check_valid(self, string):
 		"""
