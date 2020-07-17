@@ -31,6 +31,8 @@ def invoice(request):
 			clip_list = handle_cli_list(data, 10)
 			for clip in clip_list:
 				recognize(clip)
+		else:
+			recognize(data)
 		response['msg'] = "上传票据成功，识别中"
 		# 返回结果 根据上传文件的标题查找数据库信息，返回结果
 	elif request.method == "GET":

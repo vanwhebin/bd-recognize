@@ -52,13 +52,14 @@ class ClipPDF:
 		:return:
 		"""
 		general_res = self.bd_api.run_general(it)
-		# print(general_res)
+		print("general_res", general_res)
 		if general_res and "words_result" in general_res:
 			check_word_result = handler.check_valid("".join([i['words'] for i in general_res['words_result']]))
 			# 检查执行结果
 			if not check_word_result:
 				time.sleep(1)
 				word = self.bd_api.run_accurate(it)
+				print("accurate_res", word)
 				return [handler.format_text("".join([accurate_item['words'] for accurate_item in word['words_result']]))]
 			return [check_word_result]
 		else:
@@ -151,6 +152,7 @@ class ClipPDF:
 			if handler_res and "clip_list" in handler_res:
 				for it in handler_res['clip_list']:
 					result = self.handle_api_result(it, handler_res['handler'])
+					print("check final result", result)
 					time.sleep(0.8)
 					data_list = data_list + result
 					os.remove(it)

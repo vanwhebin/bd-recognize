@@ -59,7 +59,7 @@ class UpsClip(Clip):
 		:return:
 		"""
 		string = re.sub(r"\.|/|REF2|:|TRACKING # f|#|\s", '', string)
-		return re.sub(r"2of2|1of1", '', string)
+		return re.sub(r"\dof\d", '', string)
 
 	def check_valid(self, string):
 		"""

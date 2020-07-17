@@ -37,7 +37,7 @@ class FedexClip(Clip):
 				rotate = int(0)
 
 			# 选择截取的位置面积
-			tk_br = rect.br - (150, 160)  # 物流订单号矩形区域
+			tk_br = rect.br - (150, 170)  # 物流订单号矩形区域
 			tk_tl = rect.tl + (0, 240)
 			or_br = rect.br - (200, 290)  # 订单号矩形区域
 			or_tl = rect.tl + (0, 128)
@@ -61,7 +61,8 @@ class FedexClip(Clip):
 		:return:
 		"""
 		string = re.sub(r"PO|TRK|MPS|\.|/|:|#|\s", '', string)
-		return re.sub(r"2of2|1of1", '', string)
+		string = re.sub(r"\dof\d", '', string)
+		return string
 
 	def check_valid(self, string):
 		"""
