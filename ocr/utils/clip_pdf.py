@@ -51,14 +51,14 @@ class ClipPDF:
 		:param handler: 处理单据的类
 		:return:
 		"""
-		general_res = self.bd_api.run_general(it)
+		general_res = self.bd_api.run_general(it['path'])
 		print("general_res", general_res)
 		if general_res and "words_result" in general_res:
-			check_word_result = handler.check_valid("".join([i['words'] for i in general_res['words_result']]))
+			check_word_result = handler.check_valid(it['type'], "".join([i['words'] for i in general_res['words_result']]))
 			# 检查执行结果
 			if not check_word_result:
 				time.sleep(1)
-				word = self.bd_api.run_accurate(it)
+				word = self.bd_api.run_accurate(it['path'])
 				print("accurate_res", word)
 				return [handler.format_text("".join([accurate_item['words'] for accurate_item in word['words_result']]))]
 			return [check_word_result]
@@ -155,7 +155,7 @@ class ClipPDF:
 					print("check final result", result)
 					time.sleep(0.8)
 					data_list = data_list + result
-					os.remove(it)
+					os.remove(it['path'])
 				if data_list:
 					item.order_num = data_list[0]
 					item.tracking_num = data_list[1]

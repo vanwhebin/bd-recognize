@@ -22,6 +22,10 @@ class UpsClip(Clip):
 			"tl": (368, 120)
 		}
 	}
+	code_type = {
+		"order": "order_num",
+		"track": "tracking_num"
+	}
 
 	def clip(self, pdf_p):
 		clip_list = []
@@ -45,8 +49,8 @@ class UpsClip(Clip):
 			zoom_y = 20
 			mat = fitz.Matrix(zoom_x, zoom_y).preRotate(rotate)  # 缩放系数在每个维度  .preRotate(rotate)是执行一个旋转
 
-			order_num_clip_path = self.save_clip(mat, page, self.file_type + '_order_num', or_tl, or_br)
-			tracking_num_clip_path = self.save_clip(mat, page, self.file_type + '_tracking_num', tk_tl, tk_br)
+			order_num_clip_path = self.save_clip(mat, page, self.file_type + '_' + self.code_type['order'], or_tl, or_br)
+			tracking_num_clip_path = self.save_clip(mat, page, self.file_type + '_' + self.code_type['tack'], tk_tl, tk_br)
 			clip_list.append(order_num_clip_path)
 			clip_list.append(tracking_num_clip_path)
 		return clip_list
@@ -61,16 +65,19 @@ class UpsClip(Clip):
 		string = re.sub(r"\.|/|REF2|:|TRACKING # f|#|\s", '', string)
 		return re.sub(r"\dof\d", '', string)
 
-	def check_valid(self, string):
+	def check_valid(self, code_type, string):
 		"""
 		检查是否合法
+		:param code_type:
 		:param string:
 		:return:
 		"""
 		# 获得规则比较
 		format_str = self.format_text(string)
 		count = len(format_str)
-		if count < 11 and count != 18:
+		if count != 11 and code_type == self.code_type['order']:
+			return False
+		if count != 18 and code_type == self.code_type['track']:
 			# 再次调用高精度api进行查询
 			return False
 		return format_str

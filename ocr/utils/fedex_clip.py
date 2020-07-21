@@ -22,6 +22,10 @@ class FedexClip(Clip):
 			"tl": (0, 128)
 		}
 	}
+	code_type = {
+		"order": "order_num",
+		"track": "tracking_num"
+	}
 
 	def clip(self, pdf_p):
 		clip_list = []
@@ -38,7 +42,7 @@ class FedexClip(Clip):
 
 			# 选择截取的位置面积
 			tk_br = rect.br - (150, 170)  # 物流订单号矩形区域
-			tk_tl = rect.tl + (0, 240)
+			tk_tl = rect.tl + (0, 248)
 			or_br = rect.br - (200, 290)  # 订单号矩形区域
 			or_tl = rect.tl + (0, 128)
 
@@ -47,10 +51,10 @@ class FedexClip(Clip):
 			zoom_y = 20
 			mat = fitz.Matrix(zoom_x, zoom_y).preRotate(rotate)  # 缩放系数在每个维度  .preRotate(rotate)是执行一个旋转
 
-			order_num_clip_path = self.save_clip(mat, page, self.file_type + '_order_num', or_tl, or_br)
-			tracking_num_clip_path = self.save_clip(mat, page, self.file_type + '_tracking_num', tk_tl, tk_br)
-			clip_list.append(order_num_clip_path)
-			clip_list.append(tracking_num_clip_path)
+			order_num_clip_path = self.save_clip(mat, page, self.file_type + '_' + self.code_type['order'], or_tl, or_br)
+			tracking_num_clip_path = self.save_clip(mat, page, self.file_type + '_' + self.code_type['track'], tk_tl, tk_br)
+			clip_list.append({"path": order_num_clip_path, "type": self.code_type['order']})
+			clip_list.append({"path": tracking_num_clip_path, "type": self.code_type['track']})
 		return clip_list
 
 	@staticmethod
@@ -64,16 +68,19 @@ class FedexClip(Clip):
 		string = re.sub(r"\dof\d", '', string)
 		return string
 
-	def check_valid(self, string):
+	def check_valid(self, code_type, string):
 		"""
 		检查是否合法
+		:param code_type: code類型
 		:param string:
 		:return:
 		"""
 		# 获得规则比较
 		format_str = self.format_text(string)
 		count = len(format_str)
-		if count != 11 and count != 12:
+		if code_type == self.code_type['order'] and count != 11:
+			return False
+		if code_type == self.code_type['track'] and count != 12:
 			# 再次调用高精度api进行查询
 			return False
 		return format_str
