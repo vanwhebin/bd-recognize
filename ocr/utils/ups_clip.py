@@ -14,12 +14,12 @@ class UpsClip(Clip):
 	image_path = 'clips'
 	ins = {
 		"tk": {
-			"br": (180, 0),
-			"tl": (235, 50)
+			"br": (185, 5),
+			"tl": (235, 110)
 		},
 		"or": {
-			"br": (10, 0),
-			"tl": (368, 120)
+			"br": (50, 20),
+			"tl": (368, 195)
 		}
 	}
 	code_type = {
@@ -50,20 +50,25 @@ class UpsClip(Clip):
 			mat = fitz.Matrix(zoom_x, zoom_y).preRotate(rotate)  # 缩放系数在每个维度  .preRotate(rotate)是执行一个旋转
 
 			order_num_clip_path = self.save_clip(mat, page, self.file_type + '_' + self.code_type['order'], or_tl, or_br)
-			tracking_num_clip_path = self.save_clip(mat, page, self.file_type + '_' + self.code_type['tack'], tk_tl, tk_br)
-			clip_list.append(order_num_clip_path)
-			clip_list.append(tracking_num_clip_path)
+			tracking_num_clip_path = self.save_clip(mat, page, self.file_type + '_' + self.code_type['track'], tk_tl, tk_br)
+			clip_list.append({"path": order_num_clip_path, "type": self.code_type['order']})
+			clip_list.append({"path": tracking_num_clip_path, "type": self.code_type['track']})
 		return clip_list
 
-	@staticmethod
-	def format_text(string):
-		"""
-		进行清洗格式化，去除噪点
-		:param string:
-		:return:
-		"""
-		string = re.sub(r"\.|/|REF2|:|TRACKING # f|#|\s", '', string)
-		return re.sub(r"\dof\d", '', string)
+	# @staticmethod
+	# def format_text(string):
+	# 	"""
+	# 	进行清洗格式化，去除噪点
+	# 	:param string:
+	# 	:return:
+	# 	"""
+	# 	# pattern = re.compile(r"[\d+\w+]")
+	# 	# string_list = pattern.findall(string)
+	# 	# string = re.sub(r"\.|/|REF2|:|TRACKING # f|#|\s", '', "".join(string_list))
+	# 	# string = re.sub(r"\.|/|REF2|:|TRACKING # f|#|\s", '', string)
+	# 	# string = re.sub(r"\dof\d", '', string)
+	# 	format_string = re.sub(r"\.|/|:|#|\s", '', string)
+	# 	return format_string
 
 	def check_valid(self, code_type, string):
 		"""

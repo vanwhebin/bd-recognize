@@ -99,8 +99,8 @@ class ClipPDF:
 
 	def get_pdf_type(self, pymupdf_obj):
 		""" 判断PDF票据的类型 """
-		zoom_x = 20
-		zoom_y = 20
+		zoom_x = 20  # PDF放大尺寸
+		zoom_y = 20  # PDF放大尺寸
 		file_type_dir = MEDIA_ROOT
 		rect = pymupdf_obj[0].rect
 

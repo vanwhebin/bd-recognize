@@ -14,12 +14,12 @@ class FedexClip(Clip):
 	image_path = 'clips'
 	ins = {
 		"tk": {
-			"br": (150, 160),
-			"tl": (0, 240)
+			"br": (170, 170),
+			"tl": (28, 248)
 		},
 		"or": {
-			"br": (200, 290),
-			"tl": (0, 128)
+			"br": (228, 290),
+			"tl": (22, 128)
 		}
 	}
 	code_type = {
@@ -41,10 +41,10 @@ class FedexClip(Clip):
 				rotate = int(0)
 
 			# 选择截取的位置面积
-			tk_br = rect.br - (150, 170)  # 物流订单号矩形区域
-			tk_tl = rect.tl + (0, 248)
-			or_br = rect.br - (200, 290)  # 订单号矩形区域
-			or_tl = rect.tl + (0, 128)
+			tk_br = rect.br - self.ins['tk']['br']  # 物流订单号矩形区域
+			tk_tl = rect.tl + self.ins['tk']['tl']
+			or_br = rect.br - self.ins['or']['br']  # 订单号矩形区域
+			or_tl = rect.tl + self.ins['or']['tl']
 
 			# 对文件进行放大
 			zoom_x = 20
@@ -57,16 +57,20 @@ class FedexClip(Clip):
 			clip_list.append({"path": tracking_num_clip_path, "type": self.code_type['track']})
 		return clip_list
 
-	@staticmethod
-	def format_text(string):
-		"""
-		进行清洗格式化，去除噪点
-		:param string:
-		:return:
-		"""
-		string = re.sub(r"PO|TRK|MPS|\.|/|:|#|\s", '', string)
-		string = re.sub(r"\dof\d", '', string)
-		return string
+	# @staticmethod
+	# def format_text(string):
+	# 	"""
+	# 	进行清洗格式化，去除噪点
+	# 	:param string:
+	# 	:return:
+	# 	"""
+	# 	# pattern = re.compile(r"[\d+\w+]")
+	# 	# string_list = pattern.findall(string)
+	# 	# string = re.sub(r"PO|TRK|MPS|\.|/|:|#|\s", '', "".join(string_list))
+	# 	# string = re.sub(r"PO|TRK|MPS|\.|/|:|#|\s", '', string)
+	# 	# string = re.sub(r"\dof\d", '', string)
+	# 	format_string = re.sub(r"\.|/|:|#|\s", '', string)
+	# 	return format_string
 
 	def check_valid(self, code_type, string):
 		"""
