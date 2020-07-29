@@ -30,7 +30,7 @@ def invoice(request):
 		# 为防止每个任务http连接太长被远程服务器强制断开，将任务处理的列表切片
 		# clip_list = handle_cli_list(data, 10)
 		for clip in data:
-			recognize(clip)
+			recognize([clip])
 		response['msg'] = "上传票据成功，识别中"
 		# 返回结果 根据上传文件的标题查找数据库信息，返回结果
 	elif request.method == "GET":
