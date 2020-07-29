@@ -153,7 +153,7 @@ class ClipPDF:
 				for it in handler_res['clip_list']:
 					result = self.handle_api_result(it, handler_res['handler'])
 					print("check final result", result)
-					time.sleep(0.8)
+					time.sleep(1.2)
 					data_list = data_list + result
 					os.remove(it['path'])
 				if data_list:

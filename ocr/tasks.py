@@ -7,7 +7,7 @@ from huey.contrib.djhuey import db_task, task
 from ocr.utils.clip_pdf import ClipPDF
 
 
-@db_task()
+@db_task(retries=2, retry_delay=10)
 def recognize(db_items):
 	clip = ClipPDF()
 	clip.run(db_items)

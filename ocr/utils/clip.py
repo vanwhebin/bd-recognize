@@ -56,5 +56,7 @@ class Clip:
 		:param string:
 		:return:
 		"""
-		format_string = re.sub(r"\.|/|:|#|REF2|TRACKING|\s", '', string)
+		pattern = re.compile(r"[\d+\w+]")
+		string_list = pattern.findall(string)
+		format_string = re.sub(r"REF2|TRACKING|MPS|TRK|PO", '', "".join(string_list))
 		return format_string
