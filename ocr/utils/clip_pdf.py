@@ -6,7 +6,7 @@ import hashlib
 import fitz
 
 from .bd_api import BaiduAPI
-from djangodir.settings import MEDIA_ROOT
+from djangodir.settings import MEDIA_ROOT, BASE_DIR
 from ocr.utils.fedex_clip import FedexClip
 from ocr.utils.ups_clip import UpsClip
 from ocr.models import Invoice
@@ -14,6 +14,7 @@ from ocr.models import Invoice
 
 class ClipPDF:
 	pdfs = []
+	log = "log"
 	pdf_hash = []
 	bd_api = None
 	file_type = {
@@ -54,18 +55,19 @@ class ClipPDF:
 		general_res = self.bd_api.run_general(it['path'])
 		print("general_res", general_res)
 		if general_res and "words_result" in general_res:
-			check_word_result = handler.check_valid(it['type'], "".join([i['words'] for i in general_res['words_result']]))
+			check_word_result = handler.check_valid(it['type'],
+			                                        "".join([i['words'] for i in general_res['words_result']]))
 			# 检查执行结果
 			if not check_word_result:
 				time.sleep(1)
 				word = self.bd_api.run_accurate(it['path'])
-				print("accurate_res", word)
-				return [handler.format_text("".join([accurate_item['words'] for accurate_item in word['words_result']]))]
+				self.save_log("accurate_res" + str(word))
+				return [
+					handler.format_text("".join([accurate_item['words'] for accurate_item in word['words_result']]))]
 			return [check_word_result]
 		else:
-			print(u'百度API请求出错:' + str(general_res['error_msg']))
+			self.save_log(self.get_time() + u' 百度API请求出错:' + str(general_res['error_msg']))
 			return ['']
-			# raise RuntimeError('百度API请求出错:' + str(general_res['error_msg']))
 
 	def check_multi_page(self, files):
 		"""
@@ -91,7 +93,7 @@ class ClipPDF:
 						title=cur_pdf_name
 					)
 					self.pdfs.append(cur_pdf)
-					# multi_page_pdf.close()
+			# multi_page_pdf.close()
 			else:
 				self.pdfs.append(f)
 
@@ -118,7 +120,7 @@ class ClipPDF:
 		ab_img_path = os.path.join(file_type_dir, clip_name)
 		pix.writePNG(ab_img_path)
 		file_content = self.bd_api.run_general(ab_img_path)
-		print(file_content)
+		self.save_log(file_content)
 		os.remove(ab_img_path)
 		# print(file_content)
 
@@ -131,20 +133,21 @@ class ClipPDF:
 			elif re.search("REF2|UPS|TRACKING", content):
 				return self.file_type['ups']
 			else:
-				print(u'未识别出pdf文件类型, 请手动检查')
-			# raise RuntimeError("未识别出pdf文件类型，请手动检查")
+				self.save_log(u'未识别出pdf文件类型, 请手动检查')
+		# raise RuntimeError("未识别出pdf文件类型，请手动检查")
 
 		else:
-			print(u'百度API请求出错:' + str(file_content['error_msg']))
-		# raise RuntimeError('百度API请求出错:' + str(file_content['error_msg']))
+			self.save_log(u'百度API请求出错:' + str(file_content['error_msg']))
+
+	# raise RuntimeError('百度API请求出错:' + str(file_content['error_msg']))
 
 	def handle_pdf(self, item):
 		data_list = []
-		# print(item.location)
 		pdf_path = os.path.join(MEDIA_ROOT, item.location)
 		pdf_d = fitz.open(pdf_path)
 		file_type = self.get_pdf_type(pdf_d)
-		print(file_type)
+		self.save_log(file_type)
+		self.save_log(u"获得file type时间: " + self.get_time())
 		if file_type:
 			item.file_type = file_type
 
@@ -152,7 +155,8 @@ class ClipPDF:
 			if handler_res and "clip_list" in handler_res:
 				for it in handler_res['clip_list']:
 					result = self.handle_api_result(it, handler_res['handler'])
-					print("check final result", result)
+					self.save_log(f"获得{it}时间: " + self.get_time())
+					self.save_log("check final result" + str(result))
 					time.sleep(1.2)
 					data_list = data_list + result
 					os.remove(it['path'])
@@ -160,6 +164,21 @@ class ClipPDF:
 					item.order_num = data_list[0]
 					item.tracking_num = data_list[1]
 					item.save()
+
+	@staticmethod
+	def get_time():
+		return str(time.strftime("%Y%m%d-%H%M%S", time.localtime(time.time())))
+
+	def save_log(self, content):
+		""" 将爬取数据写入日志文件 """
+		log_file = time.strftime("%Y%m%d", time.localtime(time.time())) + '.log'
+		cur_dir = os.path.join(BASE_DIR, self.log)
+
+		if not os.path.exists(cur_dir):
+			os.makedirs(cur_dir)
+		with open(os.path.join(cur_dir, log_file), 'a+', encoding="utf-8") as f:
+			f.write(str(content) + os.linesep)
+		f.close()
 
 	@staticmethod
 	def file_hash(item):
@@ -177,6 +196,5 @@ class ClipPDF:
 		for p in files:
 			self.handle_pdf(p)
 		# 获取文件模板类型 识别order_num等信
-		print(u"所有文件执行完毕")
+		self.save_log(u"所有文件执行完毕")
 		return self.pdfs
-

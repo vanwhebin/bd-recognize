@@ -58,6 +58,29 @@ def handle_cli_list(full_list, per_list_len):
 	return end_list
 
 
+@csrf_exempt
+def rerun(request):
+	""" 重新执行任务 """
+	res_list = []
+	response = {'code': 200, 'msg': '', "data": []}
+	if request.method == "POST":
+		file_id = request.POST.get('id', '')
+		if not file_id:
+			raise RuntimeError('请提供正确的ID')
+		ids = list(set(file_id.split(',')))
+		data = Invoice.objects.filter(id__in=ids)
+		response['msg'] = "OK"
+		for clip in data:
+			recognize([clip])
+			dict_obj = model_to_dict(clip)
+			dict_obj['location'] = clip.get_absolute_url()
+			res_list.append(dict_obj)
+		response['msg'] = "任务再次执行"
+		# 格式化返回
+		response['data'] = res_list
+		return JsonResponse(response)
+
+
 def handle_upload(request):
 	uploaded_file = request.FILES.getlist('file')
 
@@ -68,7 +91,7 @@ def handle_upload(request):
 		dir_path = os.path.join(MEDIA_ROOT, time_tag)
 		upload_files = []
 		for it in uploaded_file:
-			file_name = it.name
+			file_name = it.name.replace('"', '')
 			if not os.path.exists(dir_path):
 				os.makedirs(dir_path)
 			with open(os.path.join(dir_path, file_name), 'wb') as f:

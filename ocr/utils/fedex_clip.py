@@ -14,7 +14,8 @@ class FedexClip(Clip):
 	image_path = 'clips'
 	ins = {
 		"tk": {
-			"br": (170, 170),
+			# "br": (170, 170), 20200805为兼容新物流pdf
+			"br": (160, 140),
 			"tl": (28, 248)
 		},
 		"or": {

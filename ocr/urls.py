@@ -9,4 +9,5 @@ from . import views
 
 urlpatterns = [
 	path('api/invoice', views.invoice, name='invoice'),
+	path('api/rerun', views.rerun, name='rerun'),
 ]
