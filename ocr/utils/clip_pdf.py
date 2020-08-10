@@ -27,21 +27,22 @@ class ClipPDF:
 		self.pdfs = []
 		self.pdf_hash = []
 
-	def pympdf2_fitz(self, pdf_p, file_type):
+	def pympdf2_fitz(self, pdf_p, file_type, title):
 		"""
 		对PDF进行操作，需要转换为图片，进行截取需要识别的文件部分
 		:param pdf_p:
-		:param file_type:
+		:param file_type
+		:param title
 		:return:
 		"""
 		clip_list = []
 		handler = None
 		if file_type == self.file_type['fedex']:
 			handler = FedexClip()
-			clip_list = handler.clip(pdf_p)
+			clip_list = handler.clip(pdf_p, title)
 		elif file_type == self.file_type['ups']:
 			handler = UpsClip()
-			clip_list = handler.clip(pdf_p)
+			clip_list = handler.clip(pdf_p, title)
 
 		return {"handler": handler, "clip_list": clip_list}
 
@@ -53,19 +54,19 @@ class ClipPDF:
 		:return:
 		"""
 		general_res = self.bd_api.run_general(it['path'])
-		print("general_res", general_res)
+		self.save_log("general_res" + str(general_res))
 		if general_res and "words_result" in general_res:
-			check_word_result = handler.check_valid(it['type'],
-			                                        "".join([i['words'] for i in general_res['words_result']]))
+			check_word_result = handler.check_valid(it['type'], "".join([i['words'] for i in general_res['words_result']]))
 			# 检查执行结果
 			if not check_word_result:
 				time.sleep(1)
 				word = self.bd_api.run_accurate(it['path'])
 				self.save_log("accurate_res" + str(word))
 				return [
-					handler.format_text("".join([accurate_item['words'] for accurate_item in word['words_result']]))]
+					handler.format_text(it['type'], "".join([accurate_item['words'] for accurate_item in word['words_result']]))]
 			return [check_word_result]
 		else:
+			# print(self.get_time() + u' 百度API请求出错:' + str(general_res['error_msg']))
 			self.save_log(self.get_time() + u' 百度API请求出错:' + str(general_res['error_msg']))
 			return ['']
 
@@ -105,15 +106,20 @@ class ClipPDF:
 		zoom_y = 20  # PDF放大尺寸
 		file_type_dir = MEDIA_ROOT
 		rect = pymupdf_obj[0].rect
+		type_br = rect.br - (0, 160)  # 物流订单号矩形区域
+		type_tl = rect.tl + (0, 120)
 
 		if rect.br[1] < rect.br[0]:  # 纵座标小于横左边 表明是横版需要调整为竖版
 			rotate = int(90)
+			type_br = rect.br - (100, 0)  # 物流订单号矩形区域
+			type_tl = rect.tl + (100, 0)
 		else:
 			rotate = int(0)
 
 		mat = fitz.Matrix(zoom_x, zoom_y).preRotate(rotate)
 		clip_name = f'clip_{uuid.uuid1().hex}.png'
-		pix = pymupdf_obj[0].getPixmap(matrix=mat, alpha=False)
+		clip = fitz.Rect(type_tl, type_br)  # 将页面转换为图像
+		pix = pymupdf_obj[0].getPixmap(matrix=mat, alpha=False, clip=clip)
 
 		if not os.path.exists(file_type_dir):
 			os.makedirs(file_type_dir)
@@ -151,7 +157,7 @@ class ClipPDF:
 		if file_type:
 			item.file_type = file_type
 
-			handler_res = self.pympdf2_fitz(pdf_path, item.file_type)  # 指定想要的区域转换成图片
+			handler_res = self.pympdf2_fitz(pdf_path, item.file_type, item.title)  # 指定想要的区域转换成图片
 			if handler_res and "clip_list" in handler_res:
 				for it in handler_res['clip_list']:
 					result = self.handle_api_result(it, handler_res['handler'])

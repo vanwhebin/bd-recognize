@@ -14,7 +14,7 @@ class UpsClip(Clip):
 	image_path = 'clips'
 	ins = {
 		"tk": {
-			"br": (185, 5),
+			"br": (185, 76),
 			"tl": (235, 110)
 		},
 		"or": {
@@ -27,7 +27,7 @@ class UpsClip(Clip):
 		"track": "tracking_num"
 	}
 
-	def clip(self, pdf_p):
+	def clip(self, pdf_p, title):
 		clip_list = []
 		pdf_doc = fitz.open(pdf_p)  # open document
 		for pg in range(pdf_doc.pageCount):  # iterate through the pages
@@ -78,12 +78,31 @@ class UpsClip(Clip):
 		:return:
 		"""
 		# 获得规则比较
-		format_str = self.format_text(string)
+		format_str = self.format_text(code_type, string)
 		count = len(format_str)
-		if count != 11 and code_type == self.code_type['order']:
-			return False
-		if count != 18 and code_type == self.code_type['track']:
+		if code_type == self.code_type['order']:
+			if count != 11:
+				return False
+			if not re.match(r"[A-Z]{2}\d{9}", format_str):
+				return False
+		if code_type == self.code_type['track']:
 			# 再次调用高精度api进行查询
-			return False
+			if count != 18:
+				return False
 		return format_str
 
+	def format_text(self, code_type, string):
+		"""
+		进行清洗格式化，去除噪点
+		:param code_type:
+		:param string:
+		:return:
+		"""
+		pattern = re.compile(r"[\d+\w+]")
+		string_list = pattern.findall(string)
+		if code_type == self.code_type['order']:
+			format_string = re.sub(r"REF2", '', "".join(string_list))
+			return format_string
+		if code_type == self.code_type['track']:
+			format_string = re.sub(r"TRACKING|TRK", '', "".join(string_list))
+			return format_string

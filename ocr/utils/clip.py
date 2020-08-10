@@ -27,8 +27,7 @@ class Clip:
 		:return:
 		"""
 		img_path = os.path.join(MEDIA_ROOT, self.image_path)
-		clip_img_name = 'clip_' + clip_name + '_' + time.strftime('%Y%m%d%H%M%S', time.localtime(time.time())) + '_' + str(
-				random.randint(1, 99)) + '.png'
+		clip_img_name = 'clip_' + clip_name + '_' + str(random.randint(1, 99)) + '.png'
 		clip = fitz.Rect(tl, br)  # 将页面转换为图像
 		pix = page.getPixmap(matrix=mat, alpha=False, clip=clip)
 		if not os.path.exists(img_path):
@@ -49,14 +48,3 @@ class Clip:
 		out = im.resize((x_z, y_z), Image.ANTIALIAS)
 		out.save(clip_file_path, 'png')
 
-	@staticmethod
-	def format_text(string):
-		"""
-		进行清洗格式化，去除噪点
-		:param string:
-		:return:
-		"""
-		pattern = re.compile(r"[\d+\w+]")
-		string_list = pattern.findall(string)
-		format_string = re.sub(r"REF2|TRACKING|MPS|TRK|PO", '', "".join(string_list))
-		return format_string

@@ -16,7 +16,7 @@ class FedexClip(Clip):
 		"tk": {
 			# "br": (170, 170), 20200805为兼容新物流pdf
 			"br": (160, 140),
-			"tl": (28, 248)
+			"tl": (30, 248)
 		},
 		"or": {
 			"br": (228, 290),
@@ -28,7 +28,7 @@ class FedexClip(Clip):
 		"track": "tracking_num"
 	}
 
-	def clip(self, pdf_p):
+	def clip(self, pdf_p, title):
 		clip_list = []
 		pdf_doc = fitz.open(pdf_p)  # open document
 		for pg in range(pdf_doc.pageCount):  # iterate through the pages
@@ -51,9 +51,9 @@ class FedexClip(Clip):
 			zoom_x = 20
 			zoom_y = 20
 			mat = fitz.Matrix(zoom_x, zoom_y).preRotate(rotate)  # 缩放系数在每个维度  .preRotate(rotate)是执行一个旋转
-
-			order_num_clip_path = self.save_clip(mat, page, self.file_type + '_' + self.code_type['order'], or_tl, or_br)
-			tracking_num_clip_path = self.save_clip(mat, page, self.file_type + '_' + self.code_type['track'], tk_tl, tk_br)
+			title_prefix = self.file_type + '_' + title + '_'
+			order_num_clip_path = self.save_clip(mat, page, title_prefix + self.code_type['order'], or_tl, or_br)
+			tracking_num_clip_path = self.save_clip(mat, page, title_prefix + self.code_type['track'], tk_tl, tk_br)
 			clip_list.append({"path": order_num_clip_path, "type": self.code_type['order']})
 			clip_list.append({"path": tracking_num_clip_path, "type": self.code_type['track']})
 		return clip_list
@@ -81,11 +81,34 @@ class FedexClip(Clip):
 		:return:
 		"""
 		# 获得规则比较
-		format_str = self.format_text(string)
+		format_str = self.format_text(code_type, string)
 		count = len(format_str)
-		if code_type == self.code_type['order'] and count != 11:
-			return False
-		if code_type == self.code_type['track'] and count != 12:
+		if code_type == self.code_type['order']:
+			if count != 11:
+				return False
+			if not re.match(r"[A-Z]{2}\d{9}", format_str):
+				return False
+		if code_type == self.code_type['track']:
 			# 再次调用高精度api进行查询
-			return False
+			if count != 12:
+				return False
+			if not re.match(r"\d{12}", format_str):
+				return False
 		return format_str
+
+	def format_text(self, code_type, string):
+		# 进行清洗格式化，去除噪点
+		pattern = re.compile(r"[\d+\w+]")
+		string_list = pattern.findall(string)
+		string = "".join(string_list)
+		if code_type == self.code_type['order']:
+			return re.sub(r"PO", '', string)
+		if code_type == self.code_type['track']:
+			return string[0:12]
+			# flag = re.search(r'#|=', string)
+			# if flag:
+			# 	string_cut_start = flag.span()[0]
+			# 	return string[0:string_cut_start]
+			# else:
+			# 	return string
+
