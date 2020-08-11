@@ -18,8 +18,8 @@ class UpsClip(Clip):
 			"tl": (235, 110)
 		},
 		"or": {
-			"br": (50, 20),
-			"tl": (368, 195)
+			"br": (50, 42),
+			"tl": (369, 195)
 		}
 	}
 	code_type = {
@@ -100,9 +100,12 @@ class UpsClip(Clip):
 		"""
 		pattern = re.compile(r"[\d+\w+]")
 		string_list = pattern.findall(string)
+		# return "".join(string_list)
 		if code_type == self.code_type['order']:
-			format_string = re.sub(r"REF2", '', "".join(string_list))
+			# format_string = re.sub(r"REF2", '', "".join(string_list))
+			format_string = "".join(string_list)
 			return format_string
 		if code_type == self.code_type['track']:
-			format_string = re.sub(r"TRACKING|TRK", '', "".join(string_list))
+			# format_string = re.sub(r"TRACKING|TRK", '', "".join(string_list))
+			format_string = "".join(string_list)
 			return format_string

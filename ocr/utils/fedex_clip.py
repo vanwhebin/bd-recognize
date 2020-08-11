@@ -102,7 +102,8 @@ class FedexClip(Clip):
 		string_list = pattern.findall(string)
 		string = "".join(string_list)
 		if code_type == self.code_type['order']:
-			return re.sub(r"PO", '', string)
+			# return re.sub(r"PO", '', string)
+			return string
 		if code_type == self.code_type['track']:
 			return string[0:12]
 			# flag = re.search(r'#|=', string)
