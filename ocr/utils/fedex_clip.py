@@ -15,12 +15,12 @@ class FedexClip(Clip):
 	ins = {
 		"tk": {
 			# "br": (170, 170), 20200805为兼容新物流pdf
-			"br": (160, 140),
+			"br": (160, 145),
 			"tl": (30, 248)
 		},
 		"or": {
 			"br": (228, 290),
-			"tl": (22, 128)
+			"tl": (22, 130)
 		}
 	}
 	code_type = {
@@ -98,8 +98,10 @@ class FedexClip(Clip):
 
 	def format_text(self, code_type, string):
 		# 进行清洗格式化，去除噪点
+		for_str = re.sub(r"\s", '', string)
+		for_str = re.sub(r"\dof\d", '', for_str)
 		pattern = re.compile(r"[\d+\w+]")
-		string_list = pattern.findall(string)
+		string_list = pattern.findall(for_str)
 		string = "".join(string_list)
 		if code_type == self.code_type['order']:
 			# return re.sub(r"PO", '', string)

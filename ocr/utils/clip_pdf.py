@@ -165,7 +165,7 @@ class ClipPDF:
 					self.save_log("check final result" + str(result))
 					time.sleep(1.2)
 					data_list = data_list + result
-					os.remove(it['path'])
+					# os.remove(it['path'])
 				if data_list:
 					item.order_num = data_list[0]
 					item.tracking_num = data_list[1]

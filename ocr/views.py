@@ -3,7 +3,7 @@
 # @Author       vanwhebin
 import os
 import time
-import hashlib
+import uuid
 
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
@@ -91,7 +91,7 @@ def handle_upload(request):
 		dir_path = os.path.join(MEDIA_ROOT, time_tag)
 		upload_files = []
 		for it in uploaded_file:
-			file_name = it.name.replace('"', '')
+			file_name = str(uuid.uuid1()) + ".pdf"
 			if not os.path.exists(dir_path):
 				os.makedirs(dir_path)
 			with open(os.path.join(dir_path, file_name), 'wb') as f:
