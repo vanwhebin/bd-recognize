@@ -132,11 +132,11 @@ class ClipPDF:
 
 		if file_content and 'words_result' in file_content:
 			content_list = [i['words'] for i in file_content['words_result']]
-			content = "".join(content_list)
-
-			if re.search("TRK|MPS|FedEx|ORDER", content):
+			content = "".join(content_list).lower()
+			print(content)
+			if re.search("trk|mps|fedex|order", content):
 				return self.file_type['fedex']
-			elif re.search("REF2|UPS|TRACKING", content):
+			elif re.search("ref2|ups|tracking", content):
 				return self.file_type['ups']
 			else:
 				self.save_log(u'未识别出pdf文件类型, 请手动检查')

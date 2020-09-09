@@ -30,7 +30,7 @@ class FedexClip(Clip):
 
 	def clip(self, pdf_p, title):
 		clip_list = []
-		pdf_doc = fitz.open(pdf_p)  # open document
+		pdf_doc = fitz.open(pdf_p)
 		for pg in range(pdf_doc.pageCount):  # iterate through the pages
 			page = pdf_doc[pg]
 			rect = page.rect  # 页面大小

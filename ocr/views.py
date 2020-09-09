@@ -26,9 +26,6 @@ def invoice(request):
 		uploaded_files = handle_upload(request)
 		# 识别invoice
 		data = clip.check_multi_page(uploaded_files)
-		# if len(data) > 10:
-		# 为防止每个任务http连接太长被远程服务器强制断开，将任务处理的列表切片
-		# clip_list = handle_cli_list(data, 10)
 		for clip in data:
 			recognize([clip])
 		response['msg'] = "上传票据成功，识别中"

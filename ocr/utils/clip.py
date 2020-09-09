@@ -34,17 +34,17 @@ class Clip:
 			os.makedirs(img_path)
 		ab_img_path = os.path.join(img_path, clip_img_name)
 		pix.writePNG(ab_img_path)  # store image as a PNG
-		# self.resize(ab_img_path)
+		self.resize(ab_img_path)
 		return ab_img_path
 
 	@staticmethod
-	def resize(clip_file_path, zoom=2):
+	def resize(clip_file_path, zoom=0.5):
 		# zoom = 2  # 截图放大尺寸
 		im = Image.open(clip_file_path)
 		(x, y) = im.size
-		print(x, y)
-		x_z = x * zoom
-		y_z = y * zoom
+		# print(x, y)
+		x_z = int(x * zoom)
+		y_z = int(y * zoom)
 		out = im.resize((x_z, y_z), Image.ANTIALIAS)
 		out.save(clip_file_path, 'png')
 
